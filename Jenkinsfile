@@ -2,13 +2,13 @@ pipeline {
     // Stage 1.5: FORCES the pipeline to run ONLY on your connected WSL agent
     agent { label 'Slave-01' } 
     
-   
-    
     stages {
-        // The first run will implicitly handle Checkout SCM
-        
-        // Stage 1.8: Build and Publish Artifact to Nexus
-        sh 'mvn clean package'
+        // Stage 1.8: Build and Package (no deploy to Nexus yet)
+        stage('Build & Package') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
 
         // Stage 1.12 - 1.13: Run Static Code Analysis
         stage('Static Analysis') {
@@ -35,11 +35,11 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 echo 'Deploying application to staging environment...'
-                // Example: Run the compiled application directly on the agent for the lab
-                // Use the & to run it in the background
-                sh 'java -jar target/webapp-*.war &'
+                // Your Maven build is producing a JAR: java-webapp-1.0.jar
+                sh 'java -jar target/java-webapp-1.0.jar &'
                 echo 'Deployment successful! Application should be running.'
             }
         }
     }
 }
+
