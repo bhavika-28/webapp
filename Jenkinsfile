@@ -2,11 +2,7 @@ pipeline {
     // Stage 1.5: FORCES the pipeline to run ONLY on your connected WSL agent
     agent { label 'Slave-01' } 
     
-    // Configure tools globally if needed, or rely on agent PATH setup
-    tools {
-        // Assuming Maven is installed on your Slave-01 agent via 'sudo apt install maven'
-        maven 'M3' 
-    }
+   
     
     stages {
         // The first run will implicitly handle Checkout SCM
