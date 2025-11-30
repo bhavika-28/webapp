@@ -8,13 +8,7 @@ pipeline {
         // The first run will implicitly handle Checkout SCM
         
         // Stage 1.8: Build and Publish Artifact to Nexus
-        stage('Build & Publish to Nexus') { 
-            steps {
-                // 'mvn clean deploy' builds, tests, and publishes the WAR/JAR file 
-                // to the Nexus repository defined in your pom.xml (Step 1.10/1.11)
-                sh 'mvn clean deploy' 
-            }
-        }
+        sh 'mvn clean package'
 
         // Stage 1.12 - 1.13: Run Static Code Analysis
         stage('Static Analysis') {
