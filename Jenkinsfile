@@ -1,34 +1,54 @@
 pipeline {
-    agent {
-        label 'master'
+    // Stage 1.5: FORCES the pipeline to run ONLY on your connected WSL agent
+    agent { label 'Slave-01' } 
+    
+    // Configure tools globally if needed, or rely on agent PATH setup
+    tools {
+        // Assuming Maven is installed on your Slave-01 agent via 'sudo apt install maven'
+        maven 'M3' 
     }
+    
     stages {
-        stage('Build') {
+        // The first run will implicitly handle Checkout SCM
+        
+        // Stage 1.8: Build and Publish Artifact to Nexus
+        stage('Build & Publish to Nexus') { 
             steps {
-                bat 'mvn -B -DskipTests clean package'
+                // 'mvn clean deploy' builds, tests, and publishes the WAR/JAR file 
+                // to the Nexus repository defined in your pom.xml (Step 1.10/1.11)
+                sh 'mvn clean deploy' 
             }
         }
-//         stage('Sonar-Report') {
-//             steps {
-//             sh 'mvn sonar:sonar \
-//   -Dsonar.projectKey=jenkins_project \
-//   -Dsonar.host.url=http://localhost:9000 \
-//   -Dsonar.login=5f09ded7e5db4d0ea0dcfd937c181af706e60475'
-//             }
-//         }
-        stage('Test') { 
+
+        // Stage 1.12 - 1.13: Run Static Code Analysis
+        stage('Static Analysis') {
             steps {
-                bat 'mvn test' 
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml' 
+                echo 'Starting SonarQube analysis...'
+                // Assumes SonarQube server is configured in Jenkins System settings
+                withSonarQubeEnv('SonarQube') { 
+                    sh 'mvn sonar:sonar' 
                 }
             }
         }
-        stage('Sonar-Report') {
+        
+        // Stage 1.13: Quality Gate Check
+        stage('Quality Gate Check') {
             steps {
-                bat 'mvn clean install sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.analysis.mode=publish'
+                timeout(time: 5, unit: 'MINUTES') {
+                    // Waits for SonarQube to return a status (PASS/FAIL)
+                    waitForQualityGate abortPipeline: true 
+                }
+            }
+        }
+        
+        // Stage 1.15: Final Deployment
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Deploying application to staging environment...'
+                // Example: Run the compiled application directly on the agent for the lab
+                // Use the & to run it in the background
+                sh 'java -jar target/webapp-*.war &'
+                echo 'Deployment successful! Application should be running.'
             }
         }
     }
