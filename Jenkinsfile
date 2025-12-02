@@ -1,26 +1,21 @@
-pipeline {
-    // Force pipeline to run only on your WSL agent
-    agent { label 'Slave-01' }
+pipeline {pipeline {
+    agent any
 
     stages {
-        // Stage 1.8: Build and Package (no Nexus, no Sonar yet)
-        stage('Build & Package') {
+        stage('Build') {
             steps {
-                sh 'mvn clean package'
+                bat 'mvn -B clean package'
             }
         }
 
-        // OPTIONAL: simple “deployment” just to mimic running the app
-        stage('Deploy to Staging') {
+        stage('Deploy to Nexus') {
             steps {
-                echo 'Deploying application to staging environment...'
-                // Maven replaces the original jar with the shaded one,
-                // so java-webapp-1.0.jar is the fat jar.
-                sh 'java -jar target/java-webapp-1.0.jar &'
-                echo 'Deployment successful! Application should be running.'
+                // this will use C:\Users\DELL\.m2\settings.xml automatically
+                bat 'mvn -B deploy'
+                // if needed, you can be explicit:
+                // bat 'mvn -B -s C:\\Users\\DELL\\.m2\\settings.xml deploy'
             }
         }
     }
 }
-
 
