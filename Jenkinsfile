@@ -1,18 +1,20 @@
-pipeline {pipeline {
+pipeline {
     agent any
 
     stages {
         stage('Build') {
             steps {
+                // Compile + package the app
                 bat 'mvn -B clean package'
             }
         }
 
         stage('Deploy to Nexus') {
             steps {
-                // this will use C:\Users\DELL\.m2\settings.xml automatically
+                // This will automatically use C:\Users\DELL\.m2\settings.xml
                 bat 'mvn -B deploy'
-                // if needed, you can be explicit:
+
+                // If you ever want to be explicit:
                 // bat 'mvn -B -s C:\\Users\\DELL\\.m2\\settings.xml deploy'
             }
         }
